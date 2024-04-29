@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+
+  fastapi:
+    build:
+      context: .
+    env_file:
+      - .env
+    container_name: fastapi
+    hostname: fastapi
+    ports:
+      - "81:81"
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 81"
+    restart: always
+    networks:
+      - geocoder_net
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgis/postgis
+    environment:
+      POSTGRES_DB: 'geolocation'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'password'
+      PGPORT: 5433
+    ports:
+      - "5433:5433"
+    networks:
+      - geocoder_net
+
+networks:
+  geocoder_net:
+    driver: bridge
+    name: geocoder_net
